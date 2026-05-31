@@ -5,7 +5,6 @@ import promptDocumentation from "../prompts/agent-document.prompt.js"
 import promptTestGenerator from "../prompts/agent-tests.prompt.js";
 
 function replacePlaceholders(prompt: string, placeholder :PlaceholdersAgentEntrada) {
-    console.warn(placeholder)
     const promptFormatted = prompt.replace('%code', placeholder.code)
     .replace('%language', placeholder.language || '')
     .replace('%context', placeholder.context || '')

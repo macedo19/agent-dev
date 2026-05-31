@@ -11,3 +11,14 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model ExecutionAgent {
+  id String @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  flowType String @map("flow_type")
+  inputPayload Json @map("input_payload")
+  outputPayload Json @map("output_payload")
+  durationMs Int @map("duration_ms")
+
+  @@map("execution_agent")
+}

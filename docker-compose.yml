@@ -23,9 +23,11 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+      - ./ollama/scripts:/ollama/scripts
     pull_policy: always
     tty: true
     restart: unless-stopped
+    entrypoint: ["/bin/bash", "/ollama/scripts/run_models.sh"]
 volumes:
   postgres_data:
   ollama_data:

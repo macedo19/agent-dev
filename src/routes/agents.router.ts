@@ -9,5 +9,6 @@ const agentController = new AgentController(
 const router = Router();
 
 router.post("/review", agentController.codeReview.bind(agentController));
+router.post("/compliance", agentController.codeCompliance.bind(agentController));
 
 export default router;

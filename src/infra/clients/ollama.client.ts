@@ -1,5 +1,9 @@
 import { GenerateResponse, Ollama } from "ollama";
-import promptReview from "../../common/prompts/agent-review.prompt.js";
+import { generatePrompt } from "../../common/utils/generate-prompts.js";
+import {
+  AgentType,
+  PlaceholdersAgentEntrada,
+} from "../../common/interfaces/agent.interface.js";
 
 class OllamaClient {
   private ollama;
@@ -16,8 +20,11 @@ class OllamaClient {
     });
   }
 
-  async sendMessage(message: string): Promise<GenerateResponse> {
-    const prompt = promptReview.replace("%code", message);
+  async sendMessage(
+    placeholdersEntrada: PlaceholdersAgentEntrada,
+    type: AgentType,
+  ): Promise<GenerateResponse> {
+    const prompt = generatePrompt(type, placeholdersEntrada);
     return await this.ollama.generate({
       model: String(process.env.OLLAMA_MODEL),
       prompt: prompt,

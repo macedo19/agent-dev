@@ -10,5 +10,6 @@ const router = Router();
 
 router.post("/review", agentController.codeReview.bind(agentController));
 router.post("/compliance", agentController.codeCompliance.bind(agentController));
+router.post("/document", agentController.generateDocumentation.bind(agentController));
 
 export default router;

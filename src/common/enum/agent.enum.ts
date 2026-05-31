@@ -1,6 +1,7 @@
 const AgentTypeEnum = { 
     REVISAO: 'review',
-    ADERENCIA: 'compliance'
+    ADERENCIA: 'compliance',
+    DOCUMENTACAO: 'documentation'
 }
 
 export { AgentTypeEnum };

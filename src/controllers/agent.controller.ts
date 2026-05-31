@@ -23,6 +23,16 @@ class AgentController {
     });
     return res.status(200).json({ data: result });
   }
+
+  async generateDocumentation(_req: Request, res: Response) {
+    const { code, language, doc_type } = _req.body;
+    const result = await this.agentService.generateDocumentation({
+      code,
+      language,
+      doc_type,
+    });
+    return res.status(200).json({ data: result });
+  }
 }
 
 export { AgentController };

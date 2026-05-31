@@ -33,6 +33,16 @@ class AgentController {
     });
     return res.status(200).json({ data: result });
   }
+
+  async generateTests(_req: Request, res: Response) {
+    const { code, language, test_framework } = _req.body;
+    const result = await this.agentService.generateTests({
+      code,
+      language,
+      test_framework,
+    });
+    return res.status(200).json({ data: result });
+  }
 }
 
 export { AgentController };

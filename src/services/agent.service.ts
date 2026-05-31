@@ -33,6 +33,14 @@ class AgentService {
     );
     return formatMessageToJson(responseAgent.response);
   }
+
+  async generateTests(placeholdersEntrada: PlaceholdersAgentEntrada) {
+    const responseAgent: GenerateResponse = await this.ollamaClient.sendMessage(
+      placeholdersEntrada,
+      AgentTypeEnum.TESTES as AgentType,
+    );
+    return formatMessageToJson(responseAgent.response);
+  }
 }
 
 export { AgentService };

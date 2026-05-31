@@ -1,4 +1,4 @@
-type AgentType = "review" | "compliance" | "documentation"
+type AgentType = "review" | "compliance" | "documentation" | "test"
 
 interface PlaceholdersAgentEntrada {
     code: string,
@@ -6,6 +6,7 @@ interface PlaceholdersAgentEntrada {
     context?:string
     task_description?: string,
     doc_type?: string,
+    test_framework?: string
 }
 
 export { AgentType , PlaceholdersAgentEntrada}

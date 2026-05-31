@@ -2,6 +2,7 @@ import { AgentType, PlaceholdersAgentEntrada } from "../interfaces/agent.interfa
 import promptAdherence from "../prompts/agent-compliance.prompt.js";
 import promptReview from "../prompts/agent-review.prompt.js"
 import promptDocumentation from "../prompts/agent-document.prompt.js"
+import promptTestGenerator from "../prompts/agent-tests.prompt.js";
 
 function replacePlaceholders(prompt: string, placeholder :PlaceholdersAgentEntrada) {
     console.warn(placeholder)
@@ -9,14 +10,16 @@ function replacePlaceholders(prompt: string, placeholder :PlaceholdersAgentEntra
     .replace('%language', placeholder.language || '')
     .replace('%context', placeholder.context || '')
     .replace('%task_description', placeholder.task_description || '')
-    .replace('%doc_type', placeholder.doc_type || '');
+    .replace('%doc_type', placeholder.doc_type || '')
+    .replace('%test_framework', placeholder.test_framework || '');
     return promptFormatted;
 }
 
 const prompts: { [key: string]: (placeholdersEntrada: PlaceholdersAgentEntrada) => string } = {
     'review': (placeholdersEntrada) => replacePlaceholders(promptReview, placeholdersEntrada),
     'compliance': (placeholdersEntrada) => replacePlaceholders(promptAdherence, placeholdersEntrada),
-    'documentation': (placeholdersEntrada) => replacePlaceholders(promptDocumentation, placeholdersEntrada)
+    'documentation': (placeholdersEntrada) => replacePlaceholders(promptDocumentation, placeholdersEntrada),
+    'test': (placeholdersEntrada) => replacePlaceholders(promptTestGenerator, placeholdersEntrada)
 };
 
 function generatePrompt(type: AgentType, placeholdersEntrada: PlaceholdersAgentEntrada) {

@@ -7,9 +7,9 @@ class AgentController {
   ) {}
 
   async codeReview(_req: Request, res: Response) {
-    console.warn(_req.body)
-    const result = await this.agentService.reviewCode();
-    return res.status(200).json({ message: result });
+    const { code } = _req.body;
+    const result = await this.agentService.reviewCode(code);
+    return res.status(200).json({ data: result });
   }
 }
 

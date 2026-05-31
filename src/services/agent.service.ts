@@ -23,7 +23,6 @@ class AgentService {
       placeholdersEntrada,
       AgentTypeEnum.ADERENCIA as AgentType,
     );
-    console.warn(responseAgent);
     return formatMessageToJson(responseAgent.response);
   }
 

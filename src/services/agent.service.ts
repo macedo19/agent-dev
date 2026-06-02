@@ -44,7 +44,7 @@ class AgentService {
     await this.saveExecution({
       responseAgent,
       placeholdersEntrada,
-      typeFlow: "review",
+      typeFlow: AgentTypeEnum.REVISAO,
       outputPayload: parsedOutput,
     });
     return parsedOutput;
@@ -63,7 +63,7 @@ class AgentService {
     await this.saveExecution({
       responseAgent,
       placeholdersEntrada,
-      typeFlow: "compliance",
+      typeFlow: AgentTypeEnum.ADERENCIA,
       outputPayload: parsedOutput,
     });
     return parsedOutput;
@@ -82,7 +82,7 @@ class AgentService {
     await this.saveExecution({
       responseAgent,
       placeholdersEntrada,
-      typeFlow: "documentation",
+      typeFlow: AgentTypeEnum.DOCUMENTACAO,
       outputPayload: parsedOutput,
     });
     return parsedOutput;
@@ -101,7 +101,7 @@ class AgentService {
     await this.saveExecution({
       responseAgent,
       placeholdersEntrada,
-      typeFlow: "tests",
+      typeFlow: AgentTypeEnum.TESTES,
       outputPayload: parsedOutput,
     });
     return parsedOutput;

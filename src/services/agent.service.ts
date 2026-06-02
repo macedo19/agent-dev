@@ -9,6 +9,7 @@ import { GenerateResponse } from "ollama/src/index.js";
 import { IExecutionAgent } from "../repositories/contracts/execution_agent.interface.js";
 import { ExecutionAgent } from "../models/execution_agent.model.js";
 import { RedisClient } from "../infra/clients/redis.client.js";
+import { RedisError } from "../common/errors/redis.error.js";
 
 class AgentService {
   constructor(
@@ -18,8 +19,12 @@ class AgentService {
   ) {}
 
   async getOutputPayloadRedisCached(key: string) {
-    const outputCached = await this.redisClient.get(key);
-    return outputCached ? formatMessageToJson(outputCached) : null;
+    try {
+      const outputCached = await this.redisClient.get(key);
+      return outputCached ? formatMessageToJson(outputCached) : null;
+    } catch {
+      throw new RedisError("Failed to retrieve cached output from Redis.");
+    }
   }
 
   async saveOutputPayloadRedisCache(key: string, value: string) {
@@ -34,13 +39,15 @@ class AgentService {
       placeholdersEntrada,
       AgentTypeEnum.REVISAO as AgentType,
     );
+    const parsedOutput = formatMessageToJson(responseAgent.response);
+    await this.saveOutputPayloadRedisCache(hashInput, responseAgent.response);
     await this.saveExecution({
       responseAgent,
       placeholdersEntrada,
       typeFlow: "review",
+      outputPayload: parsedOutput,
     });
-    await this.saveOutputPayloadRedisCache(hashInput, responseAgent.response);
-    return formatMessageToJson(responseAgent.response);
+    return parsedOutput;
   }
 
   async complianceCode(
@@ -51,13 +58,15 @@ class AgentService {
       placeholdersEntrada,
       AgentTypeEnum.ADERENCIA as AgentType,
     );
+    const parsedOutput = formatMessageToJson(responseAgent.response);
+    await this.saveOutputPayloadRedisCache(hashInput, responseAgent.response);
     await this.saveExecution({
       responseAgent,
       placeholdersEntrada,
       typeFlow: "compliance",
+      outputPayload: parsedOutput,
     });
-    await this.saveOutputPayloadRedisCache(hashInput, responseAgent.response);
-    return formatMessageToJson(responseAgent.response);
+    return parsedOutput;
   }
 
   async generateDocumentation(
@@ -68,13 +77,15 @@ class AgentService {
       placeholdersEntrada,
       AgentTypeEnum.DOCUMENTACAO as AgentType,
     );
+    const parsedOutput = formatMessageToJson(responseAgent.response);
+    await this.saveOutputPayloadRedisCache(hashInput, responseAgent.response);
     await this.saveExecution({
       responseAgent,
       placeholdersEntrada,
       typeFlow: "documentation",
+      outputPayload: parsedOutput,
     });
-    await this.saveOutputPayloadRedisCache(hashInput, responseAgent.response);
-    return formatMessageToJson(responseAgent.response);
+    return parsedOutput;
   }
 
   async generateTests(
@@ -85,29 +96,33 @@ class AgentService {
       placeholdersEntrada,
       AgentTypeEnum.TESTES as AgentType,
     );
+    const parsedOutput = formatMessageToJson(responseAgent.response);
+    await this.saveOutputPayloadRedisCache(hashInput, responseAgent.response);
     await this.saveExecution({
       responseAgent,
       placeholdersEntrada,
       typeFlow: "tests",
+      outputPayload: parsedOutput,
     });
-    await this.saveOutputPayloadRedisCache(hashInput, responseAgent.response);
-    return formatMessageToJson(responseAgent.response);
+    return parsedOutput;
   }
 
   async saveExecution({
     responseAgent,
     placeholdersEntrada,
     typeFlow,
+    outputPayload,
   }: {
     responseAgent: GenerateResponse;
     placeholdersEntrada: PlaceholdersAgentEntrada;
     typeFlow: string;
+    outputPayload: Record<string, any>;
   }) {
     const executionAgent = new ExecutionAgent({
       flowType: typeFlow,
       durationMs: responseAgent.total_duration / 1000000,
       inputPayload: placeholdersEntrada,
-      outputPayload: JSON.parse(responseAgent.response),
+      outputPayload,
     });
     await this.executionAgentRepository.saveExecution(executionAgent);
   }

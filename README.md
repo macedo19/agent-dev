@@ -14,7 +14,7 @@ TypeScript foi escolhido por segurança de tipos em tempo de compilação, espec
 ### Banco de Dados
 **PostgreSQL (via Docker)**
 
-Escolhido por ser o banco mais próximo do ambiente de produção real de um sistema como o CPJ-Cobrança, que lida com dados financeiros. SQLite seria mais simples para o case, mas PostgreSQL permite validar o schema com tipos reais (UUID nativo via `@db.Uuid`, JSON nativo para `input_payload` e `output_payload`). O Prisma foi usado como ORM pela geração de tipos TypeScript alinhada com o schema, eliminando a necessidade de tipos manuais para as entidades de banco.
+Escolhido por ser o banco mais próximo do ambiente de produção real e por permitir validar o schema com tipos reais (UUID nativo via `@db.Uuid`, JSON nativo para `input_payload` e `output_payload`). O Prisma foi usado como ORM pela geração de tipos TypeScript alinhada com o schema, eliminando a necessidade de tipos manuais para as entidades de banco.
 
 ### Provedor de IA
 **Ollama (local) — 100% sem chave de API**
@@ -23,6 +23,20 @@ O Ollama foi escolhido para que os avaliadores possam executar o projeto sem cus
 
 - **Local:** `mistral-medium-3.5`, `kimi-k2.6`
 - **Cloud:** `gemma4:31b-cloud`
+
+Vale ressaltar: o uso do modelo local influência muito no hardware da máquina. A falta de uma GPU dedicada ou em um modelo mais "forte" resulta em um uso de CPU muito alto, podendo vir a travar o computador.. (experiência própria). Por isso aconselho a , se caso for esse o cenário, utilizar os modelos cloud. Para isso basta seguir os passos:
+
+- Acesse https://ollama.com/
+- Clique em Sign in e entre com sua conta google ou do github (mais rápido)
+- Ao lado direito você verá um ícone 
+  ![alt text](image.png)
+- Clique em Settings
+- Clique em Keys
+- Clique em Add API Key e escolha um nome para a chave
+- Clique em generate API Key
+- COPIE A CHAVE E COLE EM OLLAMA_API_KEY, Ative o uso de llm cloud com `USE_OLLAMA_CLOUD=true`
+- Com isso você pode escolher qualquer modelo CLOUD disponível no Ollama. Para testes, o modelo `gemma4:31b-cloud` foi validado durante o desenvolvimento
+
 
 ### Cache
 **Redis** para cache por hash do input — entradas idênticas retornam o resultado cacheado sem invocar o LLM, reduzindo latência e custo de inferência.
@@ -373,11 +387,14 @@ Erros tipados (`AppError`, `DtoError`, `OllamaClientError`, `RedisError`) com mi
 
 ---
 
-## O que faria diferente com mais tempo
+## Implementações que ficaram pendentes
 
-- **Retry com backoff exponencial nas chamadas ao LLM** — modelos locais podem falhar por timeout, especialmente sob carga. Uma estratégia de retry com jitter evitaria falhas cascata.
-- **TTL no cache Redis** — atualmente o cache não expira. Com TTL configurável por fluxo, seria possível balancear frescor dos resultados com economia de inferência.
-- **Separação do modelo de domínio em DTOs de escrita e leitura** — a classe `ExecutionAgent` serve tanto para criar registros (sem `id`/`createdAt`) quanto para tipar leituras do banco, o que exige campos opcionais desnecessários. Separar em `CreateExecutionAgentDto` e usar o tipo gerado pelo Prisma para leitura eliminaria esse acoplamento.
-- **Testes automatizados dos endpoints** — prioridade alta para garantir que os contratos de entrada/saída não quebrem silenciosamente ao evoluir os prompts.
-- **Streaming via SSE no endpoint de review** — respostas de revisão de código tendem a ser longas; streaming melhoraria a percepção de latência para o usuário.
-- **`model_used` e `token_count` no registro de execução** — o Ollama já retorna `total_duration` e metadados do modelo; persistir esses dados permitiria análise de custo e desempenho por fluxo.
+### Rate limit por endpoint com configuração de modelo
+Cada endpoint poderia ter seu próprio rate limit independente, refletindo o custo e a latência do modelo atribuído a ele. A ideia é que endpoints mais "pesados" (como `/tests`, que gera código extenso) tenham limites mais restritivos e possam ser configurados para usar modelos menores/mais rápidos, enquanto `/review` e `/compliance` usam modelos mais capazes. O controle seria feito via middleware Express com Redis como backend de contagem, permitindo configuração por rota (`X requisições / Y segundos`) sem alterar a lógica de negócio.
+
+### Retry com fallback para conta secundária do Ollama
+Quando o envio ao Ollama falha (timeout, erro de rate limit da API cloud, indisponibilidade), o cliente poderia tentar automaticamente uma conta secundária — com chave de API e host distintos. O fluxo seria: tentativa na conta principal → `catch` → tentativa na conta de fallback → `catch` → lança `OllamaClientError`. Isso exige duas variáveis de ambiente adicionais (`OLLAMA_API_KEY_FALLBACK`, `OLLAMA_HOST_CLOUD_FALLBACK`) e uma lógica de retry com backoff exponencial no `OllamaClient`. O custo é manter duas contas Ollama ativas, mas a disponibilidade do serviço aumenta significativamente.
+
+### Sistema de usuários e rastreabilidade por solicitação
+Incluir identificação do solicitante em cada execução — quem enviou o código, em qual contexto e quando. Na prática: um campo `requested_by` (pode ser um `user_id` JWT ou uma API key de cliente) seria recebido no header da requisição, validado, e persistido junto ao `ExecutionAgent` no banco. Os logs estruturados já emitidos pelo Winston passariam a incluir esse identificador em cada evento (`flow_started`, `flow_completed`, `flow_error`), permitindo rastrear padrões de uso por usuário, auditar abusos e cruzar execuções com o histórico de forma nominal.
+

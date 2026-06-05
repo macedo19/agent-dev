@@ -1,5 +1,6 @@
 
 import { Request, Response } from "express";
+import { logger } from "../infra/log/app.logger.js";
 
 class HealthController {
 

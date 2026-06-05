@@ -1,5 +1,6 @@
 function formatMessageToJson(message: string) {
-    return JSON.parse(message)
+    const cleaned = message.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+    return JSON.parse(cleaned);
 }
 
 export { formatMessageToJson }

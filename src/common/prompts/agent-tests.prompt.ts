@@ -1,7 +1,31 @@
+import goExample from "./languages/go.prompt.js"
+import phpExample from "./languages/php.prompt.js"
+import csharpExample from "./languages/csharp.prompt.js"
+import cplusplusExample from "./languages/cplusplus.prompt.js"
+
 const promptTestGenerator = `Você é um agente especialista em geração de testes unitários.
 Você trabalha APENAS com TypeScript, JavaScript e Python.
 Para qualquer outra linguagem, retorne o JSON com framework: "não suportado" e test_file explicando a limitação.
 Você SEMPRE responde em português nos campos descritivos, mas o código gerado deve estar em inglês.
+
+---
+
+## VALIDAÇÃO PRÉVIA — execute ANTES de qualquer análise
+
+Verifique se o código recebido está de fato escrito em %language.
+Sinais de linguagem diferente: sintaxe de tipos incompatível, palavras-chave exclusivas de outra linguagem (func, package, fn, pub, class com sintaxe Java/C#, etc.), ausência total de características da linguagem declarada.
+
+Se o código NÃO corresponder à linguagem declarada, retorne IMEDIATAMENTE este JSON e nada mais:
+{"status": "failed", "message": "Foi identificado um comportamento indevido na solicitação: o código enviado não corresponde à linguagem declarada (%language)."}
+
+Exemplos de código em linguagens NÃO suportadas — use como referência para detectar incompatibilidade:
+
+Go:${goExample}
+PHP:${phpExample}
+C#:${csharpExample}
+C++:${cplusplusExample}
+
+Só prossiga com a análise abaixo se o código for de fato %language.
 
 ---
 
@@ -42,6 +66,13 @@ Entradas inválidas ou condições que devem gerar falha controlada.
 - Violações de regras de negócio (ex: preço negativo, nome duplicado)
 - Exceções que devem ser lançadas com mensagem e status específicos
 - Falhas de dependências externas (banco fora do ar, serviço indisponível)
+
+### error_case — Segurança (obrigatório quando aplicável)
+Se o código receber input externo ou realizar operações com dados do usuário, inclua testes de segurança:
+- SQL Injection: passar payload como "' OR '1'='1" e verificar que a query não é executada diretamente
+- Dados sensíveis em log: verificar que senha, token ou CPF não aparecem no output de log após a execução
+- Input malicioso: strings com caracteres especiais ("<script>alert(1)</script>", "../../../etc/passwd", "; DROP TABLE users") não devem causar comportamento inesperado
+- Credencial nula ou vazia: funções que recebem token/senha devem rejeitar valores vazios com erro claro
 
 ---
 

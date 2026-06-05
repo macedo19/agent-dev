@@ -7,6 +7,7 @@ import { DocumentDto } from "../common/dtos/document.dto.js";
 import { TestDto } from "../common/dtos/test.dto.js";
 import { DtoError } from "../common/errors/dto.error.js";
 import { HistoryDto } from "../common/dtos/history.dto.js";
+import { logger } from "../infra/log/app.logger.js";
 
 class AgentController {
   constructor(private readonly agentService: AgentService) {}
@@ -22,6 +23,7 @@ class AgentController {
         await this.agentService.getOutputPayloadRedisCached(hashed);
 
       if (outputCached !== null) {
+        logger.info({ message: "cache_hit", flow_type: "review", language });
         return res.status(200).json({ data: outputCached });
       }
 
@@ -31,6 +33,8 @@ class AgentController {
       );
       return res.status(200).json({ data: result });
     } catch (error) {
+      console.warn("Review error:", error);
+      logger.error({ message: "flow_error", flow_type: "review", error: error instanceof Error ? error.message : String(error) });
       next(error);
     }
   }
@@ -46,6 +50,7 @@ class AgentController {
         await this.agentService.getOutputPayloadRedisCached(hashed);
 
       if (outputCached !== null) {
+        logger.info({ message: "cache_hit", flow_type: "compliance", language });
         return res.status(200).json({ data: outputCached });
       }
 
@@ -55,6 +60,7 @@ class AgentController {
       );
       return res.status(200).json({ data: result });
     } catch (error) {
+      logger.error({ message: "flow_error", flow_type: "compliance", error: error instanceof Error ? error.message : String(error) });
       next(error);
     }
   }
@@ -74,6 +80,7 @@ class AgentController {
         await this.agentService.getOutputPayloadRedisCached(hashed);
 
       if (outputCached !== null) {
+        logger.info({ message: "cache_hit", flow_type: "documentation", language, doc_type });
         return res.status(200).json({ data: outputCached });
       }
 
@@ -83,6 +90,7 @@ class AgentController {
       );
       return res.status(200).json({ data: result });
     } catch (error) {
+      logger.error({ message: "flow_error", flow_type: "documentation", error: error instanceof Error ? error.message : String(error) });
       next(error);
     }
   }
@@ -98,6 +106,7 @@ class AgentController {
         await this.agentService.getOutputPayloadRedisCached(hashed);
 
       if (outputCached !== null) {
+        logger.info({ message: "cache_hit", flow_type: "tests", language, test_framework });
         return res.status(200).json({ data: outputCached });
       }
 
@@ -107,6 +116,7 @@ class AgentController {
       );
       return res.status(200).json({ data: result });
     } catch (error) {
+      logger.error({ message: "flow_error", flow_type: "tests", error: error instanceof Error ? error.message : String(error) });
       next(error);
     }
   }
@@ -119,7 +129,7 @@ class AgentController {
       const history = await this.agentService.getHistory(parsed.data.id);
       return res.status(200).json({ data: history });
     } catch (error) {
-      console.warn(error);
+      logger.error({ message: "flow_error", flow_type: "history", error: error instanceof Error ? error.message : String(error) });
       next(error);
     }
   }

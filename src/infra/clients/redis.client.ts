@@ -6,9 +6,7 @@ class RedisClient {
   public constructor() {
     this.redis = createClient({
       url: process.env.REDIS_HOST,
-    //   password: process.env.REDIS_PASSWORD,
     });
-
     this.redis.on("error", (err) => console.error("Redis error:", err));
   }
 
@@ -18,6 +16,7 @@ class RedisClient {
 
   async set(key: string, value: string): Promise<void> {
     await this.redis.set(key, value);
+    await this.redis.expire(key, parseInt(process.env.REDIS_EXPIRE_TIME_DEFAULT || "60"));
   }
 
   async get(key: string): Promise<string | null> {

@@ -1,0 +1,92 @@
+### Health check
+GET http://localhost/health
+
+###
+
+### Code Review — POST /api/v1/review
+POST http://localhost/api/v1/review
+Content-Type: application/json
+
+{
+  "language": "TypeScript",
+  "context": "Módulo de cálculo de oferta de negociação de dívidas",
+  "code": "export async function calcularOferta(devedorId: string, prazo: number) {\n  const db = require('../db');\n  const divida = await db.query(\n    `SELECT * FROM dividas WHERE devedor_id = '${devedorId}'`\n  );\n  if (!divida) return null;\n  let desconto = 0;\n  if (prazo <= 30) desconto = 0.20;\n  if (prazo <= 15) desconto = 0.30;\n  if (prazo <= 7)  desconto = 0.40;\n  const valorOferta = divida[0].valor_total * (1 - desconto);\n  console.log('Calculando oferta para devedor: ' + devedorId + ' valor: ' + valorOferta);\n  await db.query(\n    `UPDATE dividas SET ultima_oferta = ${valorOferta} WHERE devedor_id = '${devedorId}'`\n  );\n  return valorOferta;\n}"
+}
+
+###
+
+### Avaliação de Aderência — POST /api/v1/compliance
+POST http://localhost/api/v1/compliance
+Content-Type: application/json
+
+{
+  "language": "TypeScript",
+  "task_description": "História: Registrar tentativa de contato com devedor\n\nCritérios de aceite:\n- Deve salvar: id do devedor, canal (telefone/email/whatsapp), data/hora, resultado (atendeu/não atendeu/número inválido)\n- Deve impedir mais de 3 tentativas no mesmo canal no mesmo dia\n- Deve retornar erro descritivo se o devedor não existir\n- Deve ser auditável (created_by é obrigatório)\n- Não deve expor dados do devedor na resposta além do id",
+  "code": "app.post('/contatos', async (req, res) => {\n  const { devedor_id, canal, resultado } = req.body;\n  const devedor = await DevedorRepository.findById(devedor_id);\n  if (!devedor) {\n    return res.status(404).json({ error: 'Devedor não encontrado' });\n  }\n  const contato = await ContatoRepository.create({\n    devedor_id,\n    canal,\n    resultado,\n    data_hora: new Date(),\n  });\n  return res.status(201).json(contato);\n});"
+}
+
+###
+
+### Documentação Técnica — POST /api/v1/document (doc_type: technical)
+POST http://localhost/api/v1/document
+Content-Type: application/json
+
+{
+  "language": "Python",
+  "doc_type": "technical",
+  "code": "from datetime import date\nfrom typing import Literal\n\nAgeingBucket = Literal['current', '1-30', '31-60', '61-90', '91-180', '180+']\n\ndef classify_aging(due_date: date, reference_date: date | None = None) -> AgeingBucket:\n    ref = reference_date or date.today()\n    days_overdue = (ref - due_date).days\n    if days_overdue <= 0:   return 'current'\n    if days_overdue <= 30:  return '1-30'\n    if days_overdue <= 60:  return '31-60'\n    if days_overdue <= 90:  return '61-90'\n    if days_overdue <= 180: return '91-180'\n    return '180+'\n\ndef summarize_portfolio(debts: list[dict]) -> dict:\n    summary = {'current': 0, '1-30': 0, '31-60': 0, '61-90': 0, '91-180': 0, '180+': 0}\n    for debt in debts:\n        bucket = classify_aging(debt['due_date'])\n        summary[bucket] += debt['valor']\n    return summary"
+}
+
+###
+
+### Documentação Operacional — POST /api/v1/document (doc_type: operational)
+POST http://localhost/api/v1/document
+Content-Type: application/json
+
+{
+  "language": "Python",
+  "doc_type": "operational",
+  "code": "from datetime import date\nfrom typing import Literal\n\nAgeingBucket = Literal['current', '1-30', '31-60', '61-90', '91-180', '180+']\n\ndef classify_aging(due_date: date, reference_date: date | None = None) -> AgeingBucket:\n    ref = reference_date or date.today()\n    days_overdue = (ref - due_date).days\n    if days_overdue <= 0:   return 'current'\n    if days_overdue <= 30:  return '1-30'\n    if days_overdue <= 60:  return '31-60'\n    if days_overdue <= 90:  return '61-90'\n    if days_overdue <= 180: return '91-180'\n    return '180+'"
+}
+
+###
+
+### Geração de Testes — POST /api/v1/tests
+POST http://localhost/api/v1/tests
+Content-Type: application/json
+
+{
+  "language": "TypeScript",
+  "test_framework": "jest",
+  "code": "export function calcularJurosSimples(\n  principal: number,\n  taxaMensal: number,\n  meses: number\n): number {\n  if (principal < 0 || taxaMensal < 0 || meses < 0) {\n    throw new Error('Parâmetros não podem ser negativos');\n  }\n  return parseFloat((principal * (1 + taxaMensal * meses)).toFixed(2));\n}\n\nexport function gerarParcelamento(\n  valorTotal: number,\n  numParcelas: number,\n  taxaMensal: number\n): { parcela: number; numero: number; valor: number }[] {\n  if (numParcelas <= 0) throw new Error('Número de parcelas deve ser positivo');\n  const totalComJuros = calcularJurosSimples(valorTotal, taxaMensal, numParcelas);\n  const valorParcela = parseFloat((totalComJuros / numParcelas).toFixed(2));\n  return Array.from({ length: numParcelas }, (_, i) => ({\n    parcela: i + 1,\n    numero: i + 1,\n    valor: valorParcela,\n  }));\n}"
+}
+
+###
+
+### [TESTE DE VALIDAÇÃO] Code Review com código PHP declarado como TypeScript — deve retornar status: failed
+POST http://localhost/api/v1/review
+Content-Type: application/json
+
+{
+  "language": "TypeScript",
+  "context": "Módulo de cálculo de desconto para negociação de dívidas",
+  "code": "<?php\n\nfunction calcularDesconto(float $valor, float $percentual): float {\n    if ($percentual < 0 || $percentual > 100) {\n        throw new InvalidArgumentException(\"Percentual inválido\");\n    }\n    return $valor * (1 - $percentual / 100);\n}\n\n$resultado = calcularDesconto(1500.00, 20);\necho \"Valor com desconto: \" . number_format($resultado, 2) . PHP_EOL;"
+}
+
+# Resposta esperada:
+# {
+#   "data": {
+#     "status": "failed",
+#     "message": "Foi identificado um comportamento indevido na solicitação: o código enviado não corresponde à linguagem declarada (TypeScript)."
+#   }
+# }
+
+###
+
+### Histórico — últimas 20 execuções
+GET http://localhost/api/v1/history
+
+###
+
+### Histórico por ID — resultado completo de uma execução
+GET http://localhost/api/v1/history/{{id}}

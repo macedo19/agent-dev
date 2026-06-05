@@ -126,6 +126,12 @@ class AgentService {
     });
     await this.executionAgentRepository.saveExecution(executionAgent);
   }
+
+  async getHistory(filterById: string = "") {
+    const filterObject = filterById ? { id: filterById } : {};
+    const result = await this.executionAgentRepository.findAll(filterObject);
+    return result;
+  }
 }
 
 export { AgentService };

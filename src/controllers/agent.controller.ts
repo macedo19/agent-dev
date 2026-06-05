@@ -6,6 +6,7 @@ import { ComplianceDto } from "../common/dtos/compliance.dto.js";
 import { DocumentDto } from "../common/dtos/document.dto.js";
 import { TestDto } from "../common/dtos/test.dto.js";
 import { DtoError } from "../common/errors/dto.error.js";
+import { HistoryDto } from "../common/dtos/history.dto.js";
 
 class AgentController {
   constructor(private readonly agentService: AgentService) {}
@@ -106,6 +107,19 @@ class AgentController {
       );
       return res.status(200).json({ data: result });
     } catch (error) {
+      next(error);
+    }
+  }
+
+  async getHistory(_req: Request, res: Response, next: NextFunction) {
+    try {
+
+      const parsed = HistoryDto.safeParse(_req.params);
+      if (!parsed.success) throw new DtoError(parsed.error.issues);
+      const history = await this.agentService.getHistory(parsed.data.id);
+      return res.status(200).json({ data: history });
+    } catch (error) {
+      console.warn(error);
       next(error);
     }
   }

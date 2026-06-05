@@ -1,4 +1,6 @@
 class ExecutionAgent {
+  public id?: string;
+  public createdAt?: Date;
   public flowType: string;
   public inputPayload: Record<string, any>;
   public outputPayload: Record<string, any>;

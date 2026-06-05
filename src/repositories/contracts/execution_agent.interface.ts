@@ -1,7 +1,15 @@
 import { ExecutionAgent } from "../../models/execution_agent.model.js";
 
-interface IExecutionAgent {
-  saveExecution(executionAgent: ExecutionAgent): Promise<void>;
+interface IHistoryDetailGeneric {
+  id: string;
+  type: string;
+  timestamp: string;
 }
 
-export { IExecutionAgent };
+
+interface IExecutionAgent {
+  saveExecution(executionAgent: ExecutionAgent): Promise<void>;
+  findAll(filter: {id?: string}): Promise<ExecutionAgent | IHistoryDetailGeneric[]>;
+}
+
+export { IExecutionAgent, IHistoryDetailGeneric };

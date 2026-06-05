@@ -25,6 +25,7 @@ export function createAgentRouter(redisClient: RedisClient) {
     agentController.generateDocumentation.bind(agentController),
   );
   router.post("/tests", agentController.generateTests.bind(agentController));
-
+  router.get('/history', agentController.getHistory.bind(agentController));
+  router.get('/history/:id', agentController.getHistory.bind(agentController));
   return router;
 }

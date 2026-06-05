@@ -46,7 +46,6 @@ class AgentService {
       placeholdersEntrada,
       AgentTypeEnum.REVISAO as AgentType,
     );
-    console.warn("Review response:", responseAgent.response);
     const parsedOutput = formatMessageToJson(responseAgent.response);
     await this.saveOutputPayloadRedisCache(hashInput, responseAgent.response);
     await this.saveExecution({

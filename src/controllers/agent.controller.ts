@@ -33,7 +33,6 @@ class AgentController {
       );
       return res.status(200).json({ data: result });
     } catch (error) {
-      console.warn("Review error:", error);
       logger.error({ message: "flow_error", flow_type: "review", error: error instanceof Error ? error.message : String(error) });
       next(error);
     }

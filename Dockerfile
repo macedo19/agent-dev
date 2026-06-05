@@ -20,6 +20,8 @@ RUN npm ci --omit=dev
 RUN npx prisma generate
 
 COPY --from=builder /app/dist ./dist
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x docker-entrypoint.sh
 
 EXPOSE 3000
-CMD ["node", "dist/index.js"]
+ENTRYPOINT ["sh", "docker-entrypoint.sh"]

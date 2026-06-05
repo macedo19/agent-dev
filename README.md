@@ -66,7 +66,10 @@ cp .env.example .env
 # 3. Suba todos os serviços
 docker compose up --build
 
-# 4. Verifique que a aplicação está no ar
+# 4. Execute as migrations do banco (obrigatório na primeira execução)
+docker compose exec app npx prisma migrate deploy
+
+# 5. Verifique que a aplicação está no ar
 curl http://localhost/health
 # Resposta esperada: { "status": "ok" }
 ```

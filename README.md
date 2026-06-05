@@ -101,6 +101,12 @@ curl http://localhost/health
 
 ---
 
+## Coleção de Requests
+
+O arquivo `.http` na raiz do projeto contém um exemplo funcional para cada endpoint, pronto para uso com a extensão [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) no VS Code ou com o IntelliJ HTTP Client. Os payloads utilizam os artefatos de teste do domínio CPJ-Cobrança descritos no case.
+
+---
+
 ## Fluxos do Agente — Exemplos de Request e Response
 
 ### GET /health

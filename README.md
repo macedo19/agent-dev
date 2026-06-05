@@ -66,15 +66,16 @@ cp .env.example .env
 # 3. Suba todos os serviços
 docker compose up --build
 
-# 4. Execute as migrations do banco (obrigatório na primeira execução)
-docker compose exec app npx prisma migrate deploy
-
-# 5. Verifique que a aplicação está no ar
+# 4. Verifique que a aplicação está no ar
 curl http://localhost/health
 # Resposta esperada: { "status": "ok" }
 ```
 
+> A aplicação executa as migrations automaticamente na inicialização do container.
+
 > O serviço Ollama baixa e inicializa o modelo automaticamente na primeira execução. Aguarde o log `model loaded` antes de fazer as primeiras requisições.
+
+> **Porta:** a API é exposta na porta `80` via Nginx (`http://localhost/`). A porta `3000` é interna ao container e não é acessível diretamente.
 
 ---
 
@@ -96,6 +97,7 @@ curl http://localhost/health
 | `OLLAMA_API_KEY` | Chave de autenticação (cloud) | `sua_chave` |
 | `REDIS_PORT` | Porta exposta do Redis | `6379` |
 | `REDIS_HOST` | URL de conexão do Redis | `redis://redis:6379` |
+| `REDIS_EXPIRE_TIME_DEFAULT` | TTL do cache em segundos | `60` |
 
 ---
 
@@ -390,7 +392,7 @@ Erros tipados (`AppError`, `DtoError`, `OllamaClientError`, `RedisError`) com mi
 
 ---
 
-## Implementações que ficaram pendentes
+## O que eu faria diferente com mais tempo
 
 ### Rate limit por endpoint com configuração de modelo
 Cada endpoint poderia ter seu próprio rate limit independente, refletindo o custo e a latência do modelo atribuído a ele. A ideia é que endpoints mais "pesados" (como `/tests`, que gera código extenso) tenham limites mais restritivos e possam ser configurados para usar modelos menores/mais rápidos, enquanto `/review` e `/compliance` usam modelos mais capazes. O controle seria feito via middleware Express com Redis como backend de contagem, permitindo configuração por rota (`X requisições / Y segundos`) sem alterar a lógica de negócio.

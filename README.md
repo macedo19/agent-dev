@@ -2,6 +2,8 @@
 
 Microserviço backend que expõe uma API REST com um agente de IA capaz de executar quatro fluxos de automação voltados ao processo de desenvolvimento: revisão de código, avaliação de aderência a tarefas, geração de documentação técnica e geração de testes unitários.
 
+**Tempo aproximado de desenvolvimento: 12 horas**
+
 ---
 
 ## Decisões Técnicas

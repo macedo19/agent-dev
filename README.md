@@ -408,6 +408,9 @@ Cada endpoint poderia ter seu próprio rate limit independente, refletindo o cus
 ### Retry com fallback para conta secundária do Ollama
 Quando o envio ao Ollama falha (timeout, erro de rate limit da API cloud, indisponibilidade), o cliente poderia tentar automaticamente uma conta secundária — com chave de API e host distintos. O fluxo seria: tentativa na conta principal → `catch` → tentativa na conta de fallback → `catch` → lança `OllamaClientError`. Isso exige duas variáveis de ambiente adicionais (`OLLAMA_API_KEY_FALLBACK`, `OLLAMA_HOST_CLOUD_FALLBACK`) e uma lógica de retry com backoff exponencial no `OllamaClient`. O custo é manter duas contas Ollama ativas, mas a disponibilidade do serviço aumenta significativamente.
 
+### Testes automatizados
+Implementaria uma suíte de testes de integração cobrindo os quatro endpoints principais com payloads reais — validando não só o status HTTP mas a estrutura do JSON de saída (presença dos campos obrigatórios, tipos corretos, valores dentro dos enumerados esperados). Para o agente em si, testes de contrato garantiriam que mudanças no prompt não quebram silenciosamente o schema de resposta. O framework escolhido seria Jest com supertest para os endpoints e um mock do cliente Ollama para isolar os testes da inferência real.
+
 ### Sistema de usuários e rastreabilidade por solicitação
 Incluir identificação do solicitante em cada execução — quem enviou o código, em qual contexto e quando. Na prática: um campo `requested_by` (pode ser um `user_id` JWT ou uma API key de cliente) seria recebido no header da requisição, validado, e persistido junto ao `ExecutionAgent` no banco. Os logs estruturados já emitidos pelo Winston passariam a incluir esse identificador em cada evento (`flow_started`, `flow_completed`, `flow_error`), permitindo rastrear padrões de uso por usuário, auditar abusos e cruzar execuções com o histórico de forma nominal.
 
